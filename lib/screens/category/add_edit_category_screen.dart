@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import '../../models/category_model.dart';
 import '../../providers/category_provider.dart';
 import '../../core/constants/app_constants.dart';
-import '../../core/utils/validators.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_textfield.dart';
+import '../../theme/app_theme.dart';
 
 class AddEditCategoryScreen extends StatefulWidget {
   final CategoryModel? category;
@@ -39,9 +39,12 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Future<void> _save() async {
+    
     if (!_formKey.currentState!.validate()) return;
+
     final provider = context.read<CategoryProvider>();
     bool success;
+
     if (_isEditing) {
       success = await provider.updateCategory(
         widget.category!.id,
@@ -54,7 +57,23 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         _selectedIcon,
       );
     }
-    if (success && mounted) Navigator.pop(context);
+
+    if (mounted) {
+      if (success) {
+        
+        Navigator.pop(context);
+      } else {
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              provider.errorMessage ?? 'Something went wrong. Try again.',
+            ),
+            backgroundColor: AppTheme.expense,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -78,8 +97,15 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               CustomTextField(
                 controller: _nameCtrl,
                 label: 'Category Name',
-                validator: (v) =>
-                    Validators.required(v, field: 'Category name'),
+                hint: 'e.g. Food, Transport...',
+                prefixIcon: const Icon(Icons.category_outlined),
+                
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Category name is required';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 24),
               const Text(
