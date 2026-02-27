@@ -12,7 +12,8 @@ class AddEditCategoryScreen extends StatefulWidget {
   const AddEditCategoryScreen({super.key, this.category});
 
   @override
-  State<AddEditCategoryScreen> createState() => _AddEditCategoryScreenState();
+  State<AddEditCategoryScreen> createState() =>
+      _AddEditCategoryScreenState();
 }
 
 class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
@@ -43,9 +44,15 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
     bool success;
     if (_isEditing) {
       success = await provider.updateCategory(
-          widget.category!.id, _nameCtrl.text, _selectedIcon);
+        widget.category!.id,
+        _nameCtrl.text.trim(),
+        _selectedIcon,
+      );
     } else {
-      success = await provider.addCategory(_nameCtrl.text, _selectedIcon);
+      success = await provider.addCategory(
+        _nameCtrl.text.trim(),
+        _selectedIcon,
+      );
     }
     if (success && mounted) Navigator.pop(context);
   }
@@ -56,7 +63,11 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-          title: Text(_isEditing ? 'Edit Category' : 'Add Category')),
+        title: Text(
+          _isEditing ? 'Edit Category' : 'Add Category',
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -67,11 +78,17 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               CustomTextField(
                 controller: _nameCtrl,
                 label: 'Category Name',
-                validator: (v) => Validators.required(v, field: 'Category name'),
+                validator: (v) =>
+                    Validators.required(v, field: 'Category name'),
               ),
               const SizedBox(height: 24),
-              const Text('Select Icon',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              const Text(
+                'Select Icon',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 12,
@@ -93,13 +110,18 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                         borderRadius: BorderRadius.circular(10),
                         border: selected
                             ? Border.all(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 2)
+                                color:
+                                    Theme.of(context).colorScheme.primary,
+                                width: 2,
+                              )
                             : null,
                       ),
                       child: Center(
-                          child: Text(icon,
-                              style: const TextStyle(fontSize: 24))),
+                        child: Text(
+                          icon,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
                     ),
                   );
                 }).toList(),

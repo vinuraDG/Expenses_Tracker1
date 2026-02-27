@@ -5,6 +5,7 @@ import '../../core/utils/validators.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_textfield.dart';
 import '../../theme/app_theme.dart';
+import '../../routes/app_routes.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -29,8 +30,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
+
     final auth = context.read<AuthProvider>();
-    await auth.login(_emailCtrl.text.trim(), _passwordCtrl.text);
+    final success = await auth.login(
+      _emailCtrl.text.trim(),
+      _passwordCtrl.text,
+    );
+
+    // ✅ Navigate to home after successful login
+    if (success && mounted) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.home,
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -48,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  //Logo & Title
+                  // Logo & Title
                   const Icon(
                     Icons.account_balance_wallet_rounded,
                     size: 72,
@@ -88,8 +102,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline,
-                              color: AppTheme.expense, size: 18),
+                          const Icon(
+                            Icons.error_outline,
+                            color: AppTheme.expense,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -106,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                   ],
 
-                  // Fields 
+                  // Fields
                   CustomTextField(
                     controller: _emailCtrl,
                     label: 'Email',
@@ -133,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  //Login Button
+                  // Login Button
                   CustomButton(
                     label: 'Login',
                     onPressed: _login,
@@ -141,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  //Register Link
+                  // Register Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

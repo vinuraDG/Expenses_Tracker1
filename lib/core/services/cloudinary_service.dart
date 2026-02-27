@@ -4,8 +4,7 @@ import 'package:http/http.dart' as http;
 import '../constants/app_constants.dart';
 
 class CloudinaryService {
-  /// Uploads [image] using an unsigned upload preset.
-  /// No API secret is ever included in the mobile app.
+  
   Future<String> uploadReceipt(File image) async {
     final uri = Uri.parse(AppConstants.cloudinaryUploadUrl);
 

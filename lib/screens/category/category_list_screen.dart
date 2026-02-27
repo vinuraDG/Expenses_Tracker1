@@ -25,12 +25,19 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     final provider = context.watch<CategoryProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      appBar: AppBar(
+        title: const Text(
+          'Categories',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppTheme.primary,
         onPressed: () async {
           await Navigator.pushNamed(context, AppRoutes.addEditCategory);
-          context.read<CategoryProvider>().fetchCategories();
+          if (context.mounted) {
+            context.read<CategoryProvider>().fetchCategories();
+          }
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -38,8 +45,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           ? const LoadingIndicator()
           : provider.categories.isEmpty
               ? const Center(
-                  child: Text('No categories yet.',
-                      style: TextStyle(color: AppTheme.textSecondary)))
+                  child: Text(
+                    'No categories yet.',
+                    style: TextStyle(color: AppTheme.textSecondary),
+                  ),
+                )
               : ListView.builder(
                   itemCount: provider.categories.length,
                   itemBuilder: (_, i) {
@@ -47,27 +57,40 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: AppTheme.primary.withOpacity(0.1),
-                        child: Text(cat.icon,
-                            style: const TextStyle(fontSize: 20)),
+                        child: Text(
+                          cat.icon,
+                          style: const TextStyle(fontSize: 20),
+                        ),
                       ),
                       title: Text(cat.name),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                color: AppTheme.primary),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: AppTheme.primary,
+                            ),
                             onPressed: () async {
                               await Navigator.pushNamed(
-                                  context, AppRoutes.addEditCategory,
-                                  arguments: cat);
-                              context.read<CategoryProvider>().fetchCategories();
+                                context,
+                                AppRoutes.addEditCategory,
+                                arguments: cat,
+                              );
+                              if (context.mounted) {
+                                context
+                                    .read<CategoryProvider>()
+                                    .fetchCategories();
+                              }
                             },
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline,
-                                color: AppTheme.expense),
-                            onPressed: () => _confirmDelete(context, cat.id),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: AppTheme.expense,
+                            ),
+                            onPressed: () =>
+                                _confirmDelete(context, cat.id),
                           ),
                         ],
                       ),
@@ -81,19 +104,25 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Category'),
+        title: const Text(
+          'Delete Category',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
         content: const Text('Delete this category?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               context.read<CategoryProvider>().deleteCategory(id);
             },
-            child:
-                const Text('Delete', style: TextStyle(color: AppTheme.expense)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppTheme.expense),
+            ),
           ),
         ],
       ),

@@ -9,7 +9,6 @@ import 'providers/category_provider.dart';
 import 'providers/transaction_provider.dart';
 import 'routes/route_generator.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/auth/register_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/splash/splash_screen.dart';
 import 'theme/app_theme.dart';
@@ -38,11 +37,8 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         home: const AuthGate(),
+        
         onGenerateRoute: RouteGenerator.generateRoute,
-        routes: {
-          '/login': (_) => const LoginScreen(),      // ✅ added login route
-          '/register': (_) => const RegisterScreen(),
-        },
       ),
     );
   }
@@ -60,7 +56,7 @@ class AuthGate extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SplashScreen();
         }
-        //after signed in
+        // User is signed in
         if (snapshot.hasData && snapshot.data != null) {
           return const HomeScreen();
         }
