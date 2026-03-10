@@ -16,21 +16,24 @@ class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
 
-      case AppRoutes.home:                              // ✅ home route added
+      case AppRoutes.home:
         return _route(const HomeScreen());
 
-      case AppRoutes.login:                             // ✅ login route added
+      case AppRoutes.login:
         return _route(const LoginScreen());
 
-      case AppRoutes.register:                          // ✅ register route added
+      case AppRoutes.register:
         return _route(const RegisterScreen());
 
       case AppRoutes.categoryList:
         return _route(const CategoryListScreen());
 
       case AppRoutes.addEditCategory:
-        final category = settings.arguments as CategoryModel?;
-        return _route(AddEditCategoryScreen(category: category));
+        // Arguments can be CategoryModel (edit) or Map<String, dynamic> (add with default type)
+        return MaterialPageRoute(
+          builder: (_) => const AddEditCategoryScreen(),
+          settings: settings, // pass settings so screen can read args via ModalRoute
+        );
 
       case AppRoutes.addEditTransaction:
         final transaction = settings.arguments as TransactionModel?;

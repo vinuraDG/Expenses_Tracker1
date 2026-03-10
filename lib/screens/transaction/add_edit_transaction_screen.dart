@@ -79,8 +79,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(
-        source: ImageSource.gallery, imageQuality: 70);
+    final picked =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
     if (picked != null) setState(() => _receiptImage = File(picked.path));
   }
 
@@ -105,7 +105,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
     bool success;
     if (_isEditing) {
-      success = await txProvider.updateTransaction(t, newReceiptImage: _receiptImage);
+      success =
+          await txProvider.updateTransaction(t, newReceiptImage: _receiptImage);
     } else {
       success = await txProvider.addTransaction(t, receiptImage: _receiptImage);
     }
@@ -122,6 +123,14 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
     final txProvider = context.watch<TransactionProvider>();
     final catProvider = context.watch<CategoryProvider>();
 
+    // Filter categories by selected type
+    final filteredCategories =
+        catProvider.categories.where((c) => c.type == _type).toList();
+
+    // Safety check: if current _categoryId is not in filtered list, treat as null
+    final safeCategory =
+        filteredCategories.any((c) => c.id == _categoryId) ? _categoryId : null;
+
     return Scaffold(
       appBar: AppBar(
           title: Text(_isEditing ? 'Edit Transaction' : 'Add Transaction')),
@@ -132,7 +141,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-               // type selector
+              // Type selector
               Row(
                 children: [
                   Expanded(
@@ -159,9 +168,9 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Category dropdown
+              // Category dropdown - filtered by selected type
               DropdownButtonFormField<String>(
-                value: _categoryId,
+                value: safeCategory,
                 decoration: InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(
@@ -169,7 +178,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                items: catProvider.categories
+                items: filteredCategories
                     .map((c) => DropdownMenuItem(
                           value: c.id,
                           child: Text('${c.icon}  ${c.name}'),
@@ -217,7 +226,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                   child: _receiptImage != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.file(_receiptImage!, fit: BoxFit.cover))
+                          child:
+                              Image.file(_receiptImage!, fit: BoxFit.cover))
                       : _existingReceiptUrl != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(10),
@@ -253,7 +263,10 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   Widget _typeButton(String type, String label, Color color) {
     final isSelected = _type == type;
     return GestureDetector(
-      onTap: () => setState(() => _type = type),
+      onTap: () => setState(() {
+        _type = type;
+        _categoryId = null; // reset category when switching type
+      }),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),

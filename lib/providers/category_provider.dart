@@ -33,42 +33,42 @@ class CategoryProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> addCategory(String name, String icon) async {
-    _setLoading(true);
-    try {
-      final data = {'name': name.trim(), 'icon': icon};
-      final ref = await _service.addCategory(data);
-      _categories.add(CategoryModel(id: ref.id, name: name.trim(), icon: icon));
-      _categories.sort((a, b) => a.name.compareTo(b.name));
-      _errorMessage = null;
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      return false;
-    } finally {
-      _setLoading(false);
-    }
+  Future<bool> addCategory(String name, String icon, String type) async {
+  _setLoading(true);
+  try {
+    final data = {'name': name.trim(), 'icon': icon, 'type': type};
+    final ref = await _service.addCategory(data);
+    _categories.add(CategoryModel(id: ref.id, name: name.trim(), icon: icon, type: type));
+    _categories.sort((a, b) => a.name.compareTo(b.name));
+    _errorMessage = null;
+    return true;
+  } catch (e) {
+    _errorMessage = e.toString();
+    return false;
+  } finally {
+    _setLoading(false);
   }
+}
 
-  Future<bool> updateCategory(String id, String name, String icon) async {
-    _setLoading(true);
-    try {
-      final data = {'name': name.trim(), 'icon': icon};
-      await _service.updateCategory(id, data);
-      final index = _categories.indexWhere((c) => c.id == id);
-      if (index != -1) {
-        _categories[index] = CategoryModel(id: id, name: name.trim(), icon: icon);
-        _categories.sort((a, b) => a.name.compareTo(b.name));
-      }
-      _errorMessage = null;
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      return false;
-    } finally {
-      _setLoading(false);
+Future<bool> updateCategory(String id, String name, String icon, String type) async {
+  _setLoading(true);
+  try {
+    final data = {'name': name.trim(), 'icon': icon, 'type': type};
+    await _service.updateCategory(id, data);
+    final index = _categories.indexWhere((c) => c.id == id);
+    if (index != -1) {
+      _categories[index] = CategoryModel(id: id, name: name.trim(), icon: icon, type: type);
+      _categories.sort((a, b) => a.name.compareTo(b.name));
     }
+    _errorMessage = null;
+    return true;
+  } catch (e) {
+    _errorMessage = e.toString();
+    return false;
+  } finally {
+    _setLoading(false);
   }
+}
 
   Future<bool> deleteCategory(String id) async {
     _setLoading(true);

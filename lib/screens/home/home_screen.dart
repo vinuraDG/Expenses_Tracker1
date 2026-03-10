@@ -18,8 +18,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  late TabController _categoryTabController;
 
   final List<String> _tabLabels = const [
     "Dashboard",
@@ -30,7 +32,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _categoryTabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
+  }
+
+  @override
+  void dispose() {
+    _categoryTabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -42,7 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Expense Tracker',style: TextStyle(fontWeight: FontWeight.w800)),
+        title: const Text('Expense Tracker',
+            style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_4_rounded),
@@ -50,9 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
       body: _buildBody(),
-
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppTheme.primary,
         onPressed: () async {
@@ -61,32 +69,25 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
-
       bottomNavigationBar: MotionTabBar(
         initialSelectedTab: _tabLabels[_selectedIndex],
-
         labels: _tabLabels,
-
         icons: const [
           Icons.dashboard,
           Icons.receipt_long,
           Icons.category,
         ],
-
         onTabItemSelected: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-
         tabSize: 50,
         tabBarHeight: 60,
-
         textStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
-
         tabIconColor: Colors.grey,
         tabIconSelectedColor: Colors.white,
         tabSelectedColor: AppTheme.primary,
@@ -161,31 +162,141 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── ONLY THIS METHOD CHANGED ──────────────────────────────────────────────
   Widget _categoriesTab() {
     final catProvider = context.watch<CategoryProvider>();
 
-    if (catProvider.isLoading) {
-      return const LoadingIndicator();
-    }
+    if (catProvider.isLoading) return const LoadingIndicator();
 
-    if (catProvider.categories.isEmpty) {
-      return const Center(
-        child: Text("No categories found"),
+    final incomeCategories =
+        catProvider.categories.where((c) => c.isIncome).toList();
+    final expenseCategories =
+        catProvider.categories.where((c) => c.isExpense).toList();
+
+    return Column(
+      children: [
+        // Tab bar
+        Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: TabBar(
+            controller: _categoryTabController,
+            indicatorColor: AppTheme.primary,
+            labelColor: AppTheme.primary,
+            unselectedLabelColor: AppTheme.textSecondary,
+            labelStyle:
+                const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            tabs: [
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.arrow_downward_rounded, size: 16),
+                    SizedBox(width: 6),
+                    Text('Income'),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.arrow_upward_rounded, size: 16),
+                    SizedBox(width: 6),
+                    Text('Expense'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Tab content
+        Expanded(
+          child: TabBarView(
+            controller: _categoryTabController,
+            children: [
+              _categoryList(incomeCategories, 'income', AppTheme.income),
+              _categoryList(expenseCategories, 'expense', AppTheme.expense),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _categoryList(List categories, String type, Color accentColor) {
+    if (categories.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              type == 'income'
+                  ? Icons.savings_outlined
+                  : Icons.shopping_bag_outlined,
+              size: 52,
+              color: AppTheme.textSecondary.withOpacity(0.35),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'No ${type} categories yet.',
+              style: const TextStyle(color: AppTheme.textSecondary),
+            ),
+          ],
+        ),
       );
     }
 
-    return ListView.builder(
-      itemCount: catProvider.categories.length,
-      itemBuilder: (context, index) {
-        final category = catProvider.categories[index];
-
-        return ListTile(
-          leading: const Icon(Icons.category),
-          title: Text(category.name),
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      itemCount: categories.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (_, i) {
+        final cat = categories[i];
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            leading: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(cat.icon, style: const TextStyle(fontSize: 20)),
+              ),
+            ),
+            title: Text(
+              cat.name,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              type == 'income' ? 'Income' : 'Expense',
+              style: TextStyle(
+                color: accentColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         );
       },
     );
   }
+  // ── END OF CHANGED METHOD ─────────────────────────────────────────────────
 
   Widget _summaryCard(TransactionProvider txProvider) {
     return Container(

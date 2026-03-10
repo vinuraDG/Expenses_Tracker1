@@ -20,6 +20,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   String _selectedIcon = '📁';
+  String _selectedType = 'expense';
 
   bool get _isEditing => widget.category != null;
 
@@ -29,6 +30,15 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
     if (_isEditing) {
       _nameCtrl.text = widget.category!.name;
       _selectedIcon = widget.category!.icon;
+      _selectedType = widget.category!.type;
+    } else {
+      // Check if a default type was passed via route arguments
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is Map<String, dynamic> && args['defaultType'] != null) {
+          setState(() => _selectedType = args['defaultType'] as String);
+        }
+      });
     }
   }
 
@@ -39,7 +49,6 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Future<void> _save() async {
-    
     if (!_formKey.currentState!.validate()) return;
 
     final provider = context.read<CategoryProvider>();
@@ -50,20 +59,20 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         widget.category!.id,
         _nameCtrl.text.trim(),
         _selectedIcon,
+        _selectedType,
       );
     } else {
       success = await provider.addCategory(
         _nameCtrl.text.trim(),
         _selectedIcon,
+        _selectedType,
       );
     }
 
     if (mounted) {
       if (success) {
-        
         Navigator.pop(context);
       } else {
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -79,6 +88,8 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CategoryProvider>();
+    final isIncome = _selectedType == 'income';
+    final typeColor = isIncome ? AppTheme.income : AppTheme.expense;
 
     return Scaffold(
       appBar: AppBar(
@@ -87,19 +98,52 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Type Selector
+              const Text(
+                'Category Type',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    _TypeToggle(
+                      label: 'Income',
+                      icon: Icons.arrow_downward_rounded,
+                      selected: isIncome,
+                      color: AppTheme.income,
+                      onTap: () => setState(() => _selectedType = 'income'),
+                    ),
+                    _TypeToggle(
+                      label: 'Expense',
+                      icon: Icons.arrow_upward_rounded,
+                      selected: !isIncome,
+                      color: AppTheme.expense,
+                      onTap: () => setState(() => _selectedType = 'expense'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Name Field
               CustomTextField(
                 controller: _nameCtrl,
                 label: 'Category Name',
                 hint: 'e.g. Food, Transport...',
                 prefixIcon: const Icon(Icons.category_outlined),
-                
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Category name is required';
@@ -108,12 +152,11 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 },
               ),
               const SizedBox(height: 24),
+
+              // Icon Selector
               const Text(
                 'Select Icon',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -123,24 +166,18 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                   final selected = icon == _selectedIcon;
                   return GestureDetector(
                     onTap: () => setState(() => _selectedIcon = icon),
-                    child: Container(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
                         color: selected
-                            ? Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.15)
+                            ? typeColor.withOpacity(0.15)
                             : Colors.grey.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                         border: selected
-                            ? Border.all(
-                                color:
-                                    Theme.of(context).colorScheme.primary,
-                                width: 2,
-                              )
-                            : null,
+                            ? Border.all(color: typeColor, width: 2)
+                            : Border.all(color: Colors.transparent, width: 2),
                       ),
                       child: Center(
                         child: Text(
@@ -152,11 +189,64 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                   );
                 }).toList(),
               ),
-              const Spacer(),
+              const SizedBox(height: 36),
+
               CustomButton(
-                label: _isEditing ? 'Update' : 'Add Category',
+                label: _isEditing ? 'Update Category' : 'Add Category',
                 onPressed: _save,
                 isLoading: provider.isLoading,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TypeToggle extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _TypeToggle({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? color.withOpacity(0.12) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: selected
+                ? Border.all(color: color.withOpacity(0.4), width: 1.5)
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: selected ? color : Colors.grey, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? color : Colors.grey,
+                  fontWeight:
+                      selected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
