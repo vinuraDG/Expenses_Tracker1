@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ── ONLY THIS METHOD CHANGED ──────────────────────────────────────────────
+  /// ──────────────────────────────────────────────
   Widget _categoriesTab() {
     final catProvider = context.watch<CategoryProvider>();
 

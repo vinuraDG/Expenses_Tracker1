@@ -29,10 +29,10 @@ class RouteGenerator {
         return _route(const CategoryListScreen());
 
       case AppRoutes.addEditCategory:
-        // Arguments can be CategoryModel (edit) or Map<String, dynamic> (add with default type)
+        
         return MaterialPageRoute(
           builder: (_) => const AddEditCategoryScreen(),
-          settings: settings, // pass settings so screen can read args via ModalRoute
+          settings: settings, 
         );
 
       case AppRoutes.addEditTransaction:

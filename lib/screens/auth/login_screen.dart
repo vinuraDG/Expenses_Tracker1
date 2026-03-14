@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordCtrl.text,
     );
 
-    // ✅ Navigate to home after successful login
+   
     if (success && mounted) {
       Navigator.pushNamedAndRemoveUntil(
         context,
