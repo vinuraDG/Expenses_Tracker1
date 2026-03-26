@@ -85,6 +85,65 @@ Configure them inside the project for image upload.
 🌙 Dark mode
 🔔 Notifications
 
+## 🔧 Git Workflow & Contribution Guide
+
+### 📥 Clone the Repository
+
+```bash
+git clone https://github.com/vinuraDG/Expenses_Tracker1.git
+cd Expenses_Tracker1
+```
+
+---
+
+### 🌿 Create a New Branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+---
+
+### 💾 Make Changes & Commit
+
+```bash
+git add .
+git commit -m "feat: add your feature name"
+```
+
+---
+
+### 🚀 Push to GitHub
+
+```bash
+git push origin feature/your-feature-name
+```
+
+---
+
+### 🔀 Create a Pull Request
+
+1. Go to your GitHub repository
+2. Click **"Compare & pull request"**
+3. Add description
+4. Click **"Create pull request"**
+
+---
+
+### 📝 Commit Message Convention
+
+* `feat:` → New feature
+* `fix:` → Bug fix
+* `docs:` → Documentation changes
+* `style:` → UI/design changes
+* `refactor:` → Code improvement
+
+Example:
+
+```bash
+git commit -m "fix: resolve login issue"
+```
+
 👨‍💻 Author
 
 Vinura Gamage
