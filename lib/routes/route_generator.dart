@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'app_routes.dart';
-import '../models/category_model.dart';
 import '../models/transaction_model.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/auth/login_screen.dart';
