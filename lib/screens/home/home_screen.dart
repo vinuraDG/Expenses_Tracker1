@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             const SizedBox(height: 12),
             Text(
-              'No ${type} categories yet.',
+              'No $type categories yet.',
               style: const TextStyle(color: AppTheme.textSecondary),
             ),
           ],
@@ -250,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen>
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: categories.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (_, i) {
         final cat = categories[i];
         return Container(

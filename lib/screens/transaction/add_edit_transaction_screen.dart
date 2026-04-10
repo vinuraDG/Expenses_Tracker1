@@ -170,7 +170,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
               // Category dropdown - filtered by selected type
               DropdownButtonFormField<String>(
-                value: safeCategory,
+                initialValue: safeCategory,
                 decoration: InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(
